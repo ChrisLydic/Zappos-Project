@@ -1,9 +1,14 @@
 <resources>
     <string name="app_name">ILoveZappos</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_alert_set">Set Price Alert</string>
+    <string name="action_alert_edit">Edit Price Alert</string>
 
     <string name="bid_order">Bid</string>
     <string name="ask_order">Ask</string>
     <string name="amount">Amount</string>
     <string name="value">Value</string>
+
+    <string name="chart_name">BTC/USD Price</string>
+    <string name="bids_order_book_name">Bids Order Book</string>
+    <string name="asks_order_book_name">Asks Order Book</string>
 </resources>

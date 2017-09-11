@@ -27,19 +27,50 @@
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" >
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/chart_name"
+            android:textColor="@android:color/background_dark"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp" />
+
         <FrameLayout android:id="@+id/history_fragment_container"
                      android:layout_width="match_parent"
-                     android:layout_height="wrap_content" />
+                     android:layout_height="0dp"
+                     android:layout_weight="1"
+                     android:layout_margin="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bids_order_book_name"
+            android:textColor="@android:color/background_dark"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp" />
 
         <FrameLayout android:id="@+id/bids_fragment_container"
                      android:layout_width="match_parent"
                      android:layout_height="0dp"
-                     android:layout_weight="1" />
+                     android:layout_weight="1"
+                     android:layout_margin="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/asks_order_book_name"
+            android:textColor="@android:color/background_dark"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp" />
 
         <FrameLayout android:id="@+id/asks_fragment_container"
                      android:layout_width="match_parent"
                      android:layout_height="0dp"
-                     android:layout_weight="1" />
+                     android:layout_weight="1"
+                     android:layout_margin="8dp" />
 
     </LinearLayout>
 

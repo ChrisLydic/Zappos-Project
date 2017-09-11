@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
+import com.github.mikephil.charting.utils.EntryXComparator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +24,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,7 +50,8 @@ public class HistoryFragment extends Fragment {
 		mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
 		mChart.getXAxis().setTextSize( 12 );
 		//mChart.getXAxis().setValueFormatter( new LargeValueFormatter() );
-		//mChart.getXAxis().setGranularity(1f);
+		mChart.getLegend().setEnabled( false );
+		mChart.getDescription().setEnabled( false );
 		mChart.setDragEnabled( false );
 		mChart.setPinchZoom( false );
 		mChart.setScaleEnabled( false );
@@ -78,9 +85,13 @@ public class HistoryFragment extends Fragment {
 				try {
 					for ( int i = 0; i < result.length(); i++ ) {
 						JSONObject dataPoint = result.getJSONObject( i );
-						Entry entry = new Entry( dataPoint.getInt( "date" ), (float) dataPoint.getDouble( "price" ) );
+						Calendar cal = Calendar.getInstance();
+						cal.setTimeInMillis( dataPoint.getInt( "date" ) * 1000 );
+						cal.set( Calendar.SECOND, 0 );
+						Entry entry = new Entry( cal.getTimeInMillis()/1000, (float) dataPoint.getDouble( "price" ) );
 						entries.add( entry );
 					}
+					Collections.sort( entries, new EntryXComparator() );
 				} catch ( JSONException exc ) {
 					Log.e( TAG, "aaa" );
 				}
@@ -90,11 +101,11 @@ public class HistoryFragment extends Fragment {
 
 		@Override
 		protected void onPostExecute( List<Entry> entries ) {
-			mLineDataSet = new LineDataSet(entries, ""); // add entries to dataset
-			mLineDataSet.setColor( 22 );
-			mLineDataSet.setFillColor( 22 );
+			mLineDataSet = new LineDataSet(entries, "Bitcoin Price");
+			mLineDataSet.setColor( ContextCompat.getColor(getContext(), R.color.colorAccent) );
+			mLineDataSet.setFillColor( ContextCompat.getColor(getContext(), R.color.colorAccent) );
 			mLineDataSet.setLineWidth( 2f );
-			mLineDataSet.setMode( LineDataSet.Mode.CUBIC_BEZIER );
+			mLineDataSet.setMode( LineDataSet.Mode.HORIZONTAL_BEZIER );
 			mLineDataSet.setDrawFilled( true );
 			mLineDataSet.setDrawCircles( false );
 			updateUI();
