@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">ILoveZappos</string>
     <string name="action_alert_set">Set Price Alert</string>
-    <string name="action_alert_edit">Edit Price Alert</string>
+    <string name="action_alert_update">Edit Price Alert</string>
+    <string name="action_alert_delete">Remove Price Alert</string>
 
     <string name="bid_order">Bid</string>
     <string name="ask_order">Ask</string>

@@ -23,4 +23,12 @@
         </activity>
     </application>
 
+    <service
+        android:exported="false"
+        android:name=".PriceAlertService">
+        <intent-filter>
+            <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+        </intent-filter>
+    </service>
+
 </manifest>
