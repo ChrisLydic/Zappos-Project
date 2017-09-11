@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ILoveZappos</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="bid_order">Bid</string>
+    <string name="ask_order">Ask</string>
+    <string name="amount">Amount</string>
+    <string name="value">Value</string>
+</resources>
