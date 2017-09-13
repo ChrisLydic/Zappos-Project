@@ -4,6 +4,8 @@
     <string name="action_alert_update">Edit Price Alert</string>
     <string name="action_alert_delete">Remove Price Alert</string>
 
+    <string name="enter_price_prompt">Enter Price Alert Value</string>
+
     <string name="bid_order">Bid</string>
     <string name="ask_order">Ask</string>
     <string name="amount">Amount</string>
