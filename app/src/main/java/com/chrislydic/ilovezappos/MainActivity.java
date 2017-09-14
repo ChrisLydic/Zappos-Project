@@ -1,6 +1,8 @@
 package com.chrislydic.ilovezappos;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -24,6 +26,7 @@ import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
 
 public class MainActivity extends AppCompatActivity {
+	private static final String PRICE_ALERT_JOB = "com.chrislydic.ilovezappos.pricealert";
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -61,23 +64,64 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu( Menu menu ) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate( R.menu.menu_main, menu );
 		return true;
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu( Menu menu ) {
+		SharedPreferences sharedPref = this.getPreferences( Context.MODE_PRIVATE );
+		// using -1 as default because only positive values are allowed for the price alert
+		int price = sharedPref.getInt(getString(R.string.saved_price_alert), -1);
+
+		if (price == -1) { // price alert job doesn't exist
+			menu.findItem( R.id.action_set_alert ).setVisible( true );
+			menu.findItem( R.id.action_update_alert ).setVisible( false );
+			menu.findItem( R.id.action_remove_alert ).setVisible( false );
+		} else { // price alert job exists
+			menu.findItem( R.id.action_set_alert ).setVisible( false );
+			menu.findItem( R.id.action_update_alert ).setVisible( true );
+			menu.findItem( R.id.action_remove_alert ).setVisible( true );
+		}
+
+		return super.onPrepareOptionsMenu( menu );
+	}
+
+	@Override
 	public boolean onOptionsItemSelected( MenuItem item ) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 
-		//noinspection SimplifiableIfStatement
 		if ( id == R.id.action_set_alert ) {
+			LayoutInflater li = LayoutInflater.from(this);
+			View promptsView = li.inflate(R.layout.price_prompt, null);
 
+			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+			alertDialogBuilder.setView( promptsView );
+			alertDialogBuilder.setCancelable(false);
 
-			invalidateOptionsMenu();
+			final EditText priceAlertInput = (EditText) promptsView
+					.findViewById(R.id.price_input);
+
+			alertDialogBuilder.setPositiveButton(
+					"OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							createPriceAlert( false, Integer.parseInt(priceAlertInput.getText().toString()) );
+							invalidateOptionsMenu();
+							dialog.cancel();
+						}
+					});
+
+			alertDialogBuilder.setNegativeButton(
+					"Cancel",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+
+			AlertDialog alertDialog = alertDialogBuilder.create();
+			alertDialog.show();
 			return true;
 		} else if ( id == R.id.action_update_alert ) {
 			LayoutInflater li = LayoutInflater.from(this);
@@ -94,8 +138,7 @@ public class MainActivity extends AppCompatActivity {
 					"OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
-							//dispatcher.cancel("my-unique-tag");
-							createPriceAlert( Integer.parseInt(priceAlertInput.getText().toString()) );
+							createPriceAlert( true, Integer.parseInt(priceAlertInput.getText().toString()) );
 							dialog.cancel();
 						}
 					});
@@ -112,6 +155,13 @@ public class MainActivity extends AppCompatActivity {
 			alertDialog.show();
 			return true;
 		} else if ( id == R.id.action_remove_alert ) {
+			FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+			dispatcher.cancel( PRICE_ALERT_JOB );
+
+			SharedPreferences.Editor editor = this.getPreferences( Context.MODE_PRIVATE ).edit();
+			editor.remove(getString(R.string.saved_price_alert));
+			editor.apply();
+
 			invalidateOptionsMenu();
 			return true;
 		}
@@ -119,33 +169,31 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void createPriceAlert(int priceFloor) {
-		// Create a new dispatcher using the Google Play driver.
+	private void createPriceAlert(boolean cancel, int priceFloor) {
 		FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 
+		if (cancel) { // cancel the price alert job if it is running
+			dispatcher.cancel( PRICE_ALERT_JOB );
+		}
+
+		SharedPreferences.Editor editor = this.getPreferences( Context.MODE_PRIVATE ).edit();
+		editor.putInt(getString(R.string.saved_price_alert), priceFloor);
+		editor.apply();
+
+		// create a price alert job that is recurring, lasts forever (until this app kills it),
+		//   and runs every 59-60 minutes provided there is network access
 		Job myJob = dispatcher.newJobBuilder()
-				// the JobService that will be called
 				.setService(PriceAlertService.class)
-				// uniquely identifies the job
-				.setTag("my-unique-tag")
-				// one-off job
-				.setRecurring(false)
-				// don't persist past a device reboot
-				.setLifetime( Lifetime.UNTIL_NEXT_BOOT)
-				// start between 0 and 60 seconds from now
-				.setTrigger( Trigger.executionWindow(0, 60))
-				// don't overwrite an existing job with the same tag
-				.setReplaceCurrent(false)
-				// retry with exponential backoff
-				.setRetryStrategy( RetryStrategy.DEFAULT_EXPONENTIAL)
-				// constraints that need to be satisfied for the job to run
+				.setTag(PRICE_ALERT_JOB)
+				.setRecurring(true)
+				.setLifetime(Lifetime.FOREVER)
+				.setTrigger(Trigger.executionWindow(3540, 3600))
+				.setReplaceCurrent(true)
+				.setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
 				.setConstraints(
-						// only run on an unmetered network
-						Constraint.ON_UNMETERED_NETWORK,
-						// only run when the device is charging
-						Constraint.DEVICE_CHARGING
+						Constraint.ON_ANY_NETWORK
 				)
-				.setExtras(PriceAlertService.getBundle( priceFloor ))
+				.setExtras(PriceAlertService.getBundle(priceFloor))
 				.build();
 
 		dispatcher.mustSchedule(myJob);

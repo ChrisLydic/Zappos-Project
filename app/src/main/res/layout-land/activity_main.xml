@@ -45,15 +45,25 @@
                          android:layout_height="300dp"
                          android:layout_margin="8dp"/>
 
-            <FrameLayout android:id="@+id/bids_fragment_container"
-                         android:layout_width="match_parent"
-                         android:layout_height="300dp"
-                         android:layout_margin="8dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" >
 
-            <FrameLayout android:id="@+id/asks_fragment_container"
-                         android:layout_width="match_parent"
-                         android:layout_height="300dp"
-                         android:layout_margin="8dp" />
+                <FrameLayout android:id="@+id/bids_fragment_container"
+                             android:layout_width="0dp"
+                             android:layout_height="300dp"
+                             android:layout_weight="1"
+                             android:layout_margin="8dp"/>
+
+                <FrameLayout android:id="@+id/asks_fragment_container"
+                             android:layout_width="0dp"
+                             android:layout_height="300dp"
+                             android:layout_weight="1"
+                             android:layout_margin="8dp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

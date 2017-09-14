@@ -14,4 +14,11 @@
     <string name="chart_name">BTC/USD Price</string>
     <string name="bids_order_book_name">Bids Order Book</string>
     <string name="asks_order_book_name">Asks Order Book</string>
+
+    <string name="saved_price_file">pricefile</string>
+    <string name="saved_price_alert">price</string>
+
+    <string name="price_alert_notification_title">Price Alert!</string>
+    <string name="price_alert_notification_description">The price of bitcoin has gone below </string>
+    <string name="currency">USD</string>
 </resources>

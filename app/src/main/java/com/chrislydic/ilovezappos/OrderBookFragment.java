@@ -63,6 +63,9 @@ public class OrderBookFragment extends Fragment {
 		mOrderRecyclerView.setAdapter(mAdapter);
 
 		if (!isBid) {
+			TextView nameHeader = (TextView) v.findViewById( R.id.orderbook_name );
+			nameHeader.setText( R.string.asks_order_book_name );
+
 			TextView priceHeader = (TextView) v.findViewById( R.id.price_header );
 			priceHeader.setText( R.string.ask_order );
 		}
