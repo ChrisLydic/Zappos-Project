@@ -1,5 +1,7 @@
 package com.chrislydic.ilovezappos;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,15 +13,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by chris on 9/10/2017.
+ * Makes calls to the bitstamp API.
  */
-
 public class BitstampAPI {
-	private static final String TAG = "BitstampApi";
+	private static final String URL_ORDERBOOK = "https://www.bitstamp.net/api/v2/order_book/btcusd/";
+	private static final String URL_HISTORY = "https://www.bitstamp.net/api/v2/transactions/btcusd/";
+	private static final String URL_PRICE = "https://www.bitstamp.net/api/v2/ticker_hour/btcusd/";
 
 	public String getUrl( String urlSpec ) throws IOException {
 		URL url = new URL( urlSpec );
-		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -41,27 +44,15 @@ public class BitstampAPI {
 		}
 	}
 
-	public JSONObject getOrderBook() throws IOException {
-		try {
-			return new JSONObject( getUrl( "https://www.bitstamp.net/api/v2/order_book/btcusd/" ) );
-		} catch ( JSONException exc ) {
-			return null;//TODO real return
-		}
+	public JSONObject getOrderBook() throws IOException, JSONException {
+		return new JSONObject( getUrl( URL_ORDERBOOK ) );
 	}
 
-	public JSONArray getHistory() throws IOException {
-		try {
-			return new JSONArray( getUrl("https://www.bitstamp.net/api/v2/transactions/btcusd/") );
-		} catch ( JSONException exc ) {
-			return null;//TODO real return
-		}
+	public JSONArray getHistory() throws IOException, JSONException {
+		return new JSONArray( getUrl( URL_HISTORY ) );
 	}
 
-	public JSONObject getPrice() throws IOException {
-		try {
-			return new JSONObject( getUrl("https://www.bitstamp.net/api/v2/ticker_hour/btcusd/") );
-		} catch ( JSONException exc ) {
-			return null;//TODO real return
-		}
+	public JSONObject getPrice() throws IOException, JSONException {
+		return new JSONObject( getUrl( URL_PRICE ) );
 	}
 }

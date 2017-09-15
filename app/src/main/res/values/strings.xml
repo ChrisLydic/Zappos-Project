@@ -3,6 +3,7 @@
     <string name="action_alert_set">Set Price Alert</string>
     <string name="action_alert_update">Edit Price Alert</string>
     <string name="action_alert_delete">Remove Price Alert</string>
+    <string name="action_refresh">Refresh</string>
 
     <string name="enter_price_prompt">Enter Price Alert Value</string>
 
@@ -19,6 +20,6 @@
     <string name="saved_price_alert">price</string>
 
     <string name="price_alert_notification_title">Price Alert!</string>
-    <string name="price_alert_notification_description">The price of bitcoin has gone below </string>
+    <string name="price_alert_notification_description">The price of bitcoin has gone below</string>
     <string name="currency">USD</string>
 </resources>

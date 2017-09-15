@@ -22,18 +22,23 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by chris on 9/9/2017.
+ * Order book fragment retrieves and displays info on buys and asks.
  */
-
 public class OrderBookFragment extends Fragment {
-	private static final String TAG = "OrderBook";
+	private static final String TAG = OrderBookFragment.class.getSimpleName();
 	private static final String ARG_IS_BID = "list_type";
 
-	private List<Order> mOrders;
-	private RecyclerView mOrderRecyclerView;
-	private OrderAdapter mAdapter;
+	private List<Order> orders;
+	private OrderAdapter adapter;
+	// true if the fragment handles bids, false if it handles asks
 	private boolean isBid;
 
+	/**
+	 * Create new fragment with isBid argument.
+	 *
+	 * @param isBid true if the fragment handles bids, false if it handles asks
+	 * @return instance of OrderBookFragment
+	 */
 	public static OrderBookFragment newInstance( boolean isBid ) {
 		Bundle args = new Bundle();
 		args.putSerializable( ARG_IS_BID, isBid );
@@ -53,16 +58,18 @@ public class OrderBookFragment extends Fragment {
 	@Nullable
 	@Override
 	public View onCreateView( LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState ) {
-		View v = inflater.inflate(R.layout.fragment_orderbook, container, false);
+		View v = inflater.inflate( R.layout.fragment_orderbook, container, false );
 
-		mOrders = new ArrayList<>();
-		mAdapter = new OrderAdapter( mOrders );
+		orders = new ArrayList<>();
+		adapter = new OrderAdapter( orders );
 
-		mOrderRecyclerView = (RecyclerView) v.findViewById( R.id.order_recycler_view );
-		mOrderRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-		mOrderRecyclerView.setAdapter(mAdapter);
+		RecyclerView mOrderRecyclerView = (RecyclerView) v.findViewById( R.id.order_recycler_view );
+		mOrderRecyclerView.setLayoutManager( new LinearLayoutManager( getContext() ) );
+		mOrderRecyclerView.setAdapter( adapter );
 
-		if (!isBid) {
+		if ( !isBid ) {
+			// change string values in layout from the defaults if the fragment is handling asks
+
 			TextView nameHeader = (TextView) v.findViewById( R.id.orderbook_name );
 			nameHeader.setText( R.string.asks_order_book_name );
 
@@ -70,14 +77,24 @@ public class OrderBookFragment extends Fragment {
 			priceHeader.setText( R.string.ask_order );
 		}
 
-		new FetchOrdersTask().execute();
+		refresh();
 
 		return v;
 	}
 
-	public void updateUI() {
-		mAdapter.setOrders(mOrders);
-		mAdapter.notifyDataSetChanged();
+	/**
+	 * Get new data from the api.
+	 */
+	public void refresh() {
+		new FetchOrdersTask().execute();
+	}
+
+	/**
+	 * Update the ui with new data.
+	 */
+	private void updateUI() {
+		adapter.setOrders( orders );
+		adapter.notifyDataSetChanged();
 	}
 
 	private class OrderHolder extends RecyclerView.ViewHolder {
@@ -100,18 +117,18 @@ public class OrderBookFragment extends Fragment {
 
 		@Override
 		public OrderHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
-			View orderView = LayoutInflater.from(parent.getContext())
-					.inflate(R.layout.order_row, parent, false);
+			View orderView = LayoutInflater.from( parent.getContext() )
+					.inflate( R.layout.order_row, parent, false );
 
-			return new OrderHolder(orderView);
+			return new OrderHolder( orderView );
 		}
 
 		@Override
 		public void onBindViewHolder( OrderHolder holder, int position ) {
-			Order order = orderList.get(position);
-			holder.bitcoinPrice.setText(String.format(Locale.ENGLISH, "%.2f", order.getBitcoinPrice()));
-			holder.amount.setText(String.format(Locale.ENGLISH, "%.5f", order.getAmount()));
-			holder.value.setText(String.format(Locale.ENGLISH, "%.5f", order.getValue()));
+			Order order = orderList.get( position );
+			holder.bitcoinPrice.setText( String.format( Locale.ENGLISH, "%.2f", order.getBitcoinPrice() ) );
+			holder.amount.setText( String.format( Locale.ENGLISH, "%.5f", order.getAmount() ) );
+			holder.value.setText( String.format( Locale.ENGLISH, "%.5f", order.getValue() ) );
 		}
 
 		@Override
@@ -124,6 +141,10 @@ public class OrderBookFragment extends Fragment {
 		}
 	}
 
+	/**
+	 * Task that gets api data and turns it into a list of Order objects
+	 * for the order book table
+	 */
 	private class FetchOrdersTask extends AsyncTask<Void, Void, List<Order>> {
 		private final String BIDS = "bids";
 		private final String ASKS = "asks";
@@ -133,9 +154,10 @@ public class OrderBookFragment extends Fragment {
 			JSONObject result = null;
 			try {
 				result = new BitstampAPI().getOrderBook();
-				Log.i( TAG, "Fetch contents of URL: " + result );
 			} catch ( IOException exc ) {
-				Log.e( TAG, "Failed to fetch URL: ", exc );
+				Log.e( TAG, "Failed to fetch order book data: ", exc );
+			} catch ( JSONException exc ) {
+				Log.e( TAG, "Failed to parse json" );
 			}
 
 			List<Order> orders = new ArrayList<>();
@@ -143,7 +165,7 @@ public class OrderBookFragment extends Fragment {
 			if ( result != null ) {
 				try {
 					JSONArray ordersArray;
-					if (isBid) {
+					if ( isBid ) {
 						ordersArray = result.getJSONArray( BIDS );
 					} else {
 						ordersArray = result.getJSONArray( ASKS );
@@ -155,12 +177,12 @@ public class OrderBookFragment extends Fragment {
 						double bitcoinPrice = orderArray.getDouble( 0 );
 						double amount = orderArray.getDouble( 1 );
 
-						Order order = new Order(bitcoinPrice, amount);
+						Order order = new Order( bitcoinPrice, amount );
 
 						orders.add( order );
 					}
 				} catch ( JSONException exc ) {
-					Log.e( TAG, "aaa" );
+					Log.e( TAG, "Failed to parse json" );
 				}
 			}
 			return orders;
@@ -168,7 +190,7 @@ public class OrderBookFragment extends Fragment {
 
 		@Override
 		protected void onPostExecute( List<Order> orders ) {
-			mOrders = orders;
+			OrderBookFragment.this.orders = orders;
 			updateUI();
 		}
 	}
